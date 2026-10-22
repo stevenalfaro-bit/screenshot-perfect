@@ -1,6 +1,6 @@
 // The uploaded archive did not include the game engine folder (src/game/*),
 // so the original Minion Run / Fortress / Black Hole games show this notice.
-export default function MissingGame(props: { onBack?: () => void; onComplete?: () => void }) {
+export default function MissingGame(props: { onBack?: () => void; onComplete?: () => void; [k: string]: unknown }) {
   const back = props.onBack ?? props.onComplete;
   return (
     <div className="rounded-[24px] p-8 text-center" style={{ background: "rgba(255,255,255,0.8)", border: "2px solid rgba(29,99,210,0.12)" }}>
