@@ -1,14 +1,15 @@
 import { lazy, Suspense, useState, useCallback } from 'react';
 import { Sparkles, ShieldCheck, Zap, Rocket, Users } from 'lucide-react';
 import PasswordPrompt from '@/components/PasswordPrompt';
+import { Link } from '@tanstack/react-router';
 
 // The 3D game and the cinematic pull in three.js - about 700 kB. Loading them
 // on demand keeps the landing page light and instant.
-const Game3D = lazy(() => import('@/components/Game3D'));
-const BlackHoleCinematic = lazy(() => import('@/components/BlackHoleCinematic'));
+const Game3D = lazy(() => import('@/components/home/MissingGame'));
+const BlackHoleCinematic = lazy(() => import('@/components/home/MissingGame'));
 // The fortress mini-game carries its own stylesheet and animation set, so it is
 // kept out of the landing page bundle until it scrolls into view.
-const FortressGame = lazy(() => import('@/components/FortressGame'));
+const FortressGame = lazy(() => import('@/components/home/MissingGame'));
 import angelinaPhoto from '@/assets/angelina.webp';
 import pillarPhoto from '@/assets/pillar.jpeg';
 import anamaeriaPhoto from '@/assets/anamaeria.jpeg';
@@ -155,6 +156,8 @@ function App() {
             <span>The Minions Project</span>
           </div>
           <nav className="flex flex-wrap items-center gap-4 sm:gap-6 font-bold text-[#123e9b]">
+            <Link to="/live" className="px-4 py-2 rounded-full font-extrabold text-[#123e9b]" style={{ background: 'linear-gradient(135deg, #f9d93d, #f6bf2d)' }}>Live Events</Link>
+            <Link to="/admin" className="px-4 py-2 rounded-full font-extrabold text-white" style={{ background: '#123e9b' }}>Admin</Link>
             <a href="#about" className="hover:underline">About</a>
             <a href="#features" className="hover:underline">Features</a>
             <button onClick={() => setView('game')} className="hover:underline">3D Game</button>
