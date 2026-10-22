@@ -14,7 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      live_event_state: {
+        Row: {
+          event_key: string | null
+          id: number
+          run_id: string
+          stage: number
+          stage_started_at: string
+          updated_at: string
+        }
+        Insert: {
+          event_key?: string | null
+          id?: number
+          run_id?: string
+          stage?: number
+          stage_started_at?: string
+          updated_at?: string
+        }
+        Update: {
+          event_key?: string | null
+          id?: number
+          run_id?: string
+          stage?: number
+          stage_started_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
