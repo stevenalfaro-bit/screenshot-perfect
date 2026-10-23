@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { adminStatus, lockAdmin, skipStage, startEvent, stopEvent, unlockAdmin } from "@/lib/live.functions";
+import { adminStatus, lockAdmin, sendAnnouncement, skipStage, startEvent, stopEvent, unlockAdmin, worldAction } from "@/lib/live.functions";
+import { ACTION_GROUPS, WORLD_ACTIONS } from "@/live/world";
 import { EVENTS, getEvent } from "@/live/events";
 import { useLiveState } from "@/live/useLiveState";
 
@@ -100,6 +101,10 @@ function Dashboard() {
           )}
         </section>
 
+        <AnnounceBox />
+        <WorldControls />
+
+        <h2 className="text-2xl font-extrabold text-[#123e9b] mb-3" style={{ fontFamily: '"Baloo 2", cursive' }}>Live events</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {EVENTS.map((ev) => (
             <article key={ev.key} className={card + " p-6 flex flex-col"}>
@@ -114,5 +119,73 @@ function Dashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+function AnnounceBox() {
+  const send = useServerFn(sendAnnouncement);
+  const [msg, setMsg] = useState("");
+  const [style, setStyle] = useState<"info" | "party" | "alert">("info");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  return (
+    <section className={card + " p-6 mb-6"}>
+      <p className="uppercase text-xs font-extrabold tracking-[0.14em] text-[#1d63d2] mb-2">📣 Event announcement</p>
+      <form className="flex flex-col gap-3" onSubmit={async (e) => {
+        e.preventDefault();
+        if (!msg.trim()) return;
+        setBusy(true);
+        try { await send({ data: { message: msg, style } }); setMsg(""); setSent(true); setTimeout(() => setSent(false), 2500); }
+        finally { setBusy(false); }
+      }}>
+        <textarea value={msg} onChange={(e) => setMsg(e.target.value)} maxLength={280} rows={2}
+          placeholder="Say anything to everyone on the site..."
+          className="w-full rounded-xl border-2 border-[#1d63d2]/20 px-4 py-3 outline-none focus:border-[#1d63d2] resize-none" />
+        <div className="flex flex-wrap items-center gap-2">
+          {(["info", "party", "alert"] as const).map((s) => (
+            <button type="button" key={s} onClick={() => setStyle(s)}
+              className={"px-4 py-2 rounded-full font-bold border-2 " + (style === s ? "border-[#123e9b] bg-[#123e9b] text-white" : "border-[#1d63d2]/20 text-[#123e9b]")}>
+              {s === "info" ? "💙 Info" : s === "party" ? "🎉 Party" : "🚨 Alert"}
+            </button>
+          ))}
+          <span className="flex-1" />
+          {sent && <span className="font-bold text-green-700">Sent to everyone!</span>}
+          <span className="text-sm text-gray-500">{msg.length}/280</span>
+          <button disabled={busy || !msg.trim()} className={yellowBtn}>Send</button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function WorldControls() {
+  const act = useServerFn(worldAction);
+  const live = useLiveState();
+  const [busy, setBusy] = useState<string | null>(null);
+  const go = async (id: string) => { setBusy(id); try { await act({ data: { id } }); } finally { setBusy(null); } };
+  const w = live?.world;
+  return (
+    <section className={card + " p-6 mb-6"}>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <p className="uppercase text-xs font-extrabold tracking-[0.14em] text-[#1d63d2]">🌍 World controls ({WORLD_ACTIONS.length})</p>
+          {w && <p className="text-sm text-gray-600">Hour {w.hour} · {w.weather} · speed ×{w.speed} · jump ×{w.jump} · gravity ×{w.gravity} · size ×{w.scale}{w.disco ? " · disco" : ""}</p>}
+        </div>
+        <button disabled={!!busy} onClick={() => go("reset")} className="px-4 py-2 rounded-full font-bold text-white bg-[#123e9b] disabled:opacity-50">Reset world</button>
+      </div>
+      {ACTION_GROUPS.map((g) => (
+        <div key={g} className="mb-4">
+          <h3 className="font-extrabold text-[#123e9b] mb-2">{g}</h3>
+          <div className="flex flex-wrap gap-2">
+            {WORLD_ACTIONS.filter((a) => a.group === g).map((a) => (
+              <button key={a.id} disabled={!!busy} onClick={() => go(a.id)}
+                className="px-3 py-2 rounded-xl font-bold text-sm bg-[#1d63d2]/[0.07] text-[#123e9b] hover:bg-[#f9d93d] transition-colors disabled:opacity-50">
+                {a.emoji} {a.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
   );
 }
