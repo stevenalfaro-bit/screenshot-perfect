@@ -1,3 +1,4 @@
+import "@react-three/fiber";
 import { forwardRef } from "react";
 import * as THREE from "three";
 import type { Skin } from "@/live/world";
