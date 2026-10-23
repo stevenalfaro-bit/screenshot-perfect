@@ -3,6 +3,7 @@ import { useSession } from "@tanstack/react-start/server";
 import { createHash, timingSafeEqual, randomUUID } from "node:crypto";
 import { z } from "zod";
 import { canAutoAdvance, getEvent, nextStage } from "@/live/events";
+import { applyAction, DEFAULT_WORLD, readWorld } from "@/live/world";
 
 type AdminSession = { admin?: boolean };
 
@@ -86,6 +87,29 @@ export const stopEvent = createServerFn({ method: "POST" }).handler(async () => 
   await db.from("live_event_state").update({ event_key: null, stage: 0, updated_at: new Date().toISOString() }).eq("id", 1);
   return { ok: true };
 });
+
+export const sendAnnouncement = createServerFn({ method: "POST" })
+  .inputValidator((d: { message: string; style: string }) =>
+    z.object({ message: z.string().trim().min(1).max(280), style: z.enum(["info", "party", "alert"]) }).parse(d))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const db = await admin();
+    const { error } = await db.from("announcements").insert({ message: data.message, style: data.style });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const worldAction = createServerFn({ method: "POST" })
+  .inputValidator((d: { id: string }) => z.object({ id: z.string().max(40) }).parse(d))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const db = await admin();
+    const { data: row } = await db.from("live_event_state").select("world").eq("id", 1).single();
+    const next = data.id === "reset" ? DEFAULT_WORLD : applyAction(readWorld(row?.world), data.id, Date.now());
+    if (!next) throw new Error("Unknown action");
+    await db.from("live_event_state").update({ world: next as never, updated_at: new Date().toISOString() }).eq("id", 1);
+    return { ok: true };
+  });
 
 /** Public: anyone can nudge the event forward, but only once the server sees the stage time is up. */
 export const autoAdvance = createServerFn({ method: "POST" })

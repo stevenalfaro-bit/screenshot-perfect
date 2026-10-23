@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          style: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          style?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          style?: string
+        }
+        Relationships: []
+      }
       live_event_state: {
         Row: {
           event_key: string | null
@@ -22,6 +43,7 @@ export type Database = {
           stage: number
           stage_started_at: string
           updated_at: string
+          world: Json
         }
         Insert: {
           event_key?: string | null
@@ -30,6 +52,7 @@ export type Database = {
           stage?: number
           stage_started_at?: string
           updated_at?: string
+          world?: Json
         }
         Update: {
           event_key?: string | null
@@ -38,6 +61,7 @@ export type Database = {
           stage?: number
           stage_started_at?: string
           updated_at?: string
+          world?: Json
         }
         Relationships: []
       }

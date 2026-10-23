@@ -6,9 +6,9 @@ interface PasswordPromptProps {
   onSuccess: () => void;
   onCancel: () => void;
   /** Optional copy so the same prompt can guard different secrets. */
-  title?: string;
-  description?: string;
-  submitLabel?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  submitLabel?: string | undefined;
 }
 
 export default function PasswordPrompt({
